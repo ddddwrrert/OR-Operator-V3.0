@@ -34,7 +34,8 @@ function fixtureContext() {
         const dir = request.confine.root
         const file = join(dir, 'solution.py')
         const source = await readFile(file, 'utf8')
-        const input = JSON.parse(request.prompt[0].text.split('\n').at(-1))
+        const lastLine = request.prompt[0].text.split('\n').at(-1)
+        const input = lastLine.startsWith('{') ? JSON.parse(lastLine) : {}
         const report = {
           hypothesis: { claim: 'Current construction stalls', evidence: ['constant permitted improvement'], confidence: 0.9, test: 'score' },
           operator: { name: 'move-' + next, change: 'improve constant', scope: 'fixture',
@@ -87,3 +88,29 @@ for (const version of ['3.0']) {
   })
 }
 
+
+test('ordinary DSH chunks retain selection, mutation and population culling', async t => {
+  const task = await mkdtemp(join(tmpdir(), 'or-operator-baseline-'))
+  t.after(() => rm(task, { recursive: true, force: true }))
+  await cp(join(pluginDir, 'tests', 'fixtures', 'task'), task, { recursive: true })
+  const ctx = fixtureContext()
+  ctx.evolve = new Evolve(ctx)
+  const baseline = Object.fromEntries(['select', 'mutate', 'evaluate', 'survive'].map(key => [key, ctx.evolve.getProvider(key)]))
+  const { createPlugin } = await import('../index.js')
+  const uninstall = createPlugin({ fraction: 0 }).apply(ctx)
+  t.after(uninstall)
+  for (const [key, provider] of Object.entries(baseline)) assert.equal(ctx.evolve.getProvider(key), provider)
+  const exec = { agent: { session: { header: { cwd: task } } } }
+  const settings = { maxBudget: 3, maxPopulation: 3, k: 2 }
+  const first = await ctx.evolve.run({ ...settings, candidates: 1 }, exec)
+  assert.equal(first.remaining, 2)
+  const second = await ctx.evolve.run(settings, exec)
+  assert.equal(second.remaining, 0)
+  const rows = (await readFile(join(task, 'run', 'population.jsonl'), 'utf8')).trim().split('\n').map(JSON.parse)
+  assert.equal(rows.length, 4)
+  assert.deepEqual(rows.slice(1).map(row => row.fitness), [9, 12, 13])
+  assert.equal(rows.filter(row => row.survival === 'yes').length, 2)
+  for (const [index, row] of rows.entries()) {
+    if (index > 0) assert.ok(rows.slice(0, index).some(parent => parent.id === row.parent))
+  }
+})

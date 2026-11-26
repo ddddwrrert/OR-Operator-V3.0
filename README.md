@@ -1,6 +1,13 @@
 # OR-Operator V3.0
 
-## Python 框架
+## 正式实验入口
+
+在已安装原版 Organon 的 DSH 配置中启用本仓库的 `cordis.patch.yml` bundle，使用原版 **Evolve Mode**。同一主 Agent 会话按小批次调用 `evolve_run`，批次之间读取 `evolve_status`、分析进展并决定下一批。各批复用同一任务的原版种群和全局预算。父代选择、候选分配、官方评估及种群淘汰均走原版服务。本版在处理触发条件满足的候选时增加M1–M5 加上 M6 的发现策略试验与择优。
+
+DSH 的主 Agent 负责多轮编排。诊断和实现分别使用原版 worker。对齐实验应让所有版本和基线都使用同一个 Organon/Evolve Mode、评估器和预算口径，并为每一组创建独立任务副本。使用 `evolve_plugins` 核实当前 loop 是本版本的 `or-operator-v3.0`。独立 Python 和 Node.js 示例适用于本地算法验证。
+
+
+## 独立 Python 复现实验
 
 本目录自带完整 Python 源码、YAML 配置、安装入口和测试。Python 3.11+。建议每个版本使用自己的虚拟环境。
 
@@ -27,7 +34,7 @@ V3 层在固定数值任务上对策略做配对评估，隔离运行使用有�
 ## Offline standalone run
 
 ```powershell
-npm start -- --work demo-run
+npm run demo -- --work demo-run
 npm run test:offline
 ```
 
@@ -39,26 +46,17 @@ A successor mechanism can propose evidence selection and discovery instructions,
 
 ## 运行测试
 
-在 PowerShell 中运行：
+在本仓库根目录运行：
 
 ```powershell
-Set-Location -LiteralPath 'D:\RSI\OR-Operator\V3.0'
 npm test
 ```
 
 需要 Node.js 22+、Python 和OR-Operator 同级目录中的 Organon（原）。也可以用环境变量 ORGANON_ROOT 指向另一份原版源码。测试复制原版任务夹具到临时目录，通过原版 Evolve 服务、候选分配、循环、Python 评估脚本及种群文件执行三个版本。测试替身为 worker 和本地进程接口。
 
-## 加载到 Organon
+## DSH 插件配置
 
-先使用原版文档建立 DSH Evolve Mode。把 OR-Operator 放在可加载的宿主路径，在独立的 DSH 配置层为已有 evolve 服务插入一个插件。例中模块路径相对于配置文件，按部署目录调整：
-
-```yaml
-- insert:
-    - id: or-operator
-      name: ./OR-Operator/V3.0/index.js
-```
-
-也可以由宿主插件导入任一版本的 createPlugin(options)，在具备 ctx.evolve 的上下文中调用 apply(ctx)。同一服务只装一个 OR-Operator 版本。注册后仍调用原版 evolve_run。保持原版循环入口的参数和响应格式；插件包装原版循环并复用原版 select、evaluate、survive 和常规 mutate。动态切换 loop 时，OR-Operator 需要作为当前 loop 提供者。卸载插件会把调用交回原先的 loop，已有种群和日志仍可继续使用。
+可以由宿主插件导入 createPlugin(options)，在具备 ctx.evolve 的上下文中调用 apply(ctx)。同一 DSH 配置启用一个 OR-Operator 版本。插件注册后，Evolve Mode 通过 evolve_run 调用原版循环。
 
 ### 配置接口
 

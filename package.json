@@ -12,6 +12,15 @@
   "scripts": {
     "test": "node --test tests/*.test.js",
     "start": "node run.js",
-    "test:offline": "node --test tests/standalone.test.js"
+    "test:offline": "node --test tests/standalone.test.js",
+    "demo": "node run.js"
+  },
+  "version": "3.0.0",
+  "dsh": {
+    "bundle": {
+      "patch": [
+        "./cordis.patch.yml"
+      ]
+    }
   }
 }
