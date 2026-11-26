@@ -1,0 +1,5 @@
+solver:
+  timeout: 10
+  compiler: g++
+  sandbox_prefix: []
+  organon_seed_env: ''

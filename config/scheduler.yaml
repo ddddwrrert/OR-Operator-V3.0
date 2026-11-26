@@ -1,0 +1,4 @@
+scheduler:
+  algorithm: UCB
+  exploration: 0.8
+  invalid_penalty: 0.2

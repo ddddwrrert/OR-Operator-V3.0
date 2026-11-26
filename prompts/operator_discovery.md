@@ -1,0 +1,1 @@
+Return JSON with ideas (list), each with name, rationale, reads, writes, before, metadata, and optionally body. Address the evidence. For a scheduled composition implement exactly the ordered components and preserve their declared preconditions.

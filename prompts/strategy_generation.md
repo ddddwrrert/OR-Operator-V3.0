@@ -1,0 +1,1 @@
+Return a JSON patch limited to window, confidence, step, max_sequence, composition_limit, seed_count, diagnosis_directive and discovery_directive. Propose an evidence-led mechanism change. Do not provide executable code.

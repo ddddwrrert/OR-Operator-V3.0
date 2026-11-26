@@ -1,0 +1,7 @@
+budget:
+  candidates: 16
+  evaluations: 320
+  tokens: 100000
+  runtime_seconds: 180
+  meta_trials: 4
+  composition_trials: 6

@@ -1,0 +1,4 @@
+evaluation:
+  seeds: [11, 29, 47]
+  minimum_gain: 0.000001
+  majority: 0.51

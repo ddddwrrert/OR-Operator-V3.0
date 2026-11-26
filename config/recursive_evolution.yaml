@@ -1,0 +1,9 @@
+recursive:
+  trigger_after: 3
+  interval: 4
+  max_trials: 2
+  training_attempts: 3
+  training_seed: 5
+  heldout_seeds: [101, 307]
+  minimum_gain: 0.00001
+  tasks: [[2.5, -1.6, 0.5], [-1.5, 1.2, 2.2]]
